@@ -1,0 +1,31 @@
+Terms and Conditions
+    ---------------------
+    This agreement ("Agreement") is entered into between [Aseem Singhal] ("Instructor" or "We") and yourself ("Student" or "You") in connection to your usage of this tool (TVTool). By using this tool, you acknowledge and agree to be bound by the terms and conditions of this Agreement.
+
+    • Use of Trading View Tool (TVTool): The TVTool is not intended as a recommendation or endorsement of any specific trading strategies or techniques. You agree to use the TVTool solely for educational purposes and understand that the Instructor does not provide a tip-providing service.
+
+    • Responsibility: You acknowledge and agree that all decisions made and actions taken regarding your trading activities are solely your responsibility. We do not assume any responsibility for any profits or losses generated through the use of our trading tools (TVTool).
+
+    • Tool Usage: You agree not to attempt to reverse engineer, modify, or share the code provided with others. The trading tool is for your personal use only and should not be distributed or repurposed without our explicit consent.
+
+    • Functionality: You understand that the trading tool's (TVTool’s) performance may be affected by various factors, including but not limited to internet connectivity, hardware limitations (such as a slow laptop), errors within trading platforms (e.g., TradingView), issues with brokers, API malfunctions, and other technical glitches. We do not guarantee uninterrupted or error-free operation of the trading tool and are not liable for any issues arising from such factors.
+
+    • Indemnification: By using this tool, you acknowledge and agree to indemnify and hold the Instructor harmless against any and all claims, damages, losses, liabilities, costs, and expenses (including attorney's fees) incurred by the Instructor arising out of or in connection with:
+        - Any losses incurred by you in trading activities, whether or not influenced by this TVTool;
+        - Any losses resulting from technology errors, including but not limited to technical glitches, system failures, failure of Python codes, failure of TVTool, or other technical issues;
+        - The non-refundable nature of the TVTool fee and the understanding that no refunds will be provided after the usage of the tool commencement; and
+        - The understanding that any backtested strategy results presented during the Course do not guarantee future profits or outcomes.
+
+    • No Financial Guarantee: The Instructor makes no representations or warranties regarding the profitability or success of any trading strategies or techniques discussed. You understand and acknowledge that trading activities involve inherent risks, and any decisions or actions taken based on the Course content are at your own discretion and risk.
+
+    • Market Risks: You understand and acknowledge that option trading and automatic API trading are subject to market risks. The Instructor shall not be held liable for any losses incurred due to market volatility, fluctuations, or any other market-related factors.
+
+    • Intellectual Property: All Course materials, including but not limited to text, graphics, videos, and code, are the intellectual property of the Instructor and protected by applicable copyright laws. You agree not to reproduce, distribute, or share any Course materials without prior written permission from the Instructor.
+
+    • Governing Law and Jurisdiction: This Agreement shall be governed by and construed in accordance with the laws of India. Any disputes arising out of or in connection with this Agreement shall be subject to the exclusive jurisdiction of the courts located in New Delhi, India.
+
+    • Disclosure: I am not a SEBI registered Advisor, and I do not possess any Research Analyst or Investment Advisor license. By enrolling in this course, you acknowledge and agree that you are undertaking the course at your own responsibility. You understand that any information or guidance provided during the course is for educational purposes only and should not be construed as financial advice or recommendations for investment decisions. You are solely responsible for any actions you take based on the knowledge and skills acquired through the course.
+
+    By using this TVTool, you acknowledge that you have read and understood the terms and conditions of this Agreement. You agree to comply with all the obligations and responsibilities outlined herein.
+
+    IF YOU DO NOT AGREE TO ABOVE, YOU SHOULD NOT LOGIN TO THE TOOL.

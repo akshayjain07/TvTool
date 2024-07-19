@@ -1,0 +1,1 @@
+[{'name': 'nuvama', 'id': 1, 'params': {'api_key': 's_kZYD4QpWaYyg', 'api_secret': '7fS!il@sFGpc0ht0'}, 'active': 1, 'inputs': {'Request Id': ''}, 'count': 1, 'request_token': '343566f2f2681b90', 'timestamp': '2024-07-07'}]

@@ -1,178 +1,259 @@
 import tkinter as tk
-from tkinter import ttk, messagebox
+from tkinter import ttk
+from tkinter import messagebox
+import pymongo
+from datetime import datetime
+from PIL import Image, ImageTk
 
-class BrokerStrategyMappingPage(tk.Frame):
+class SignalsPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg='#F0F0F0')
-
-        # Configure grid to expand
         self.grid(row=0, column=0, sticky="nsew")
         parent.grid_rowconfigure(0, weight=1)
         parent.grid_columnconfigure(0, weight=1)
+        self.create_ui()
 
-        self.brokers = []
-        self.auth_codes = []
+    def create_ui(self):
+        # Horizontal bar1
+        bar1 = tk.Frame(self, bg='#EBEBEB', height=100)
+        bar1.pack(fill='x', pady=10)
 
-        # Horizontal bar with labels
-        horizontal_bar1 = tk.Frame(self, bg='#EBEBEB')
-        horizontal_bar1.place(x=35, y=20, width=910, height=30)
-        
-        # Create headings
-        headings = ["Broker", "Index", "Executions", "Status", "Keys", "Actions"]
-        heading_bg = "#EBEBEB"
-        heading_font = ("Helvetica", 12)
+        # Headings
+        headings = ['Select Broker', 'Index', 'Select Strategy', 'Lots']
+        x_coords_headings = [100, 350, 600, 850]
+        font_settings_heading = ("Arial", 10, "bold")
+
         for i, heading in enumerate(headings):
-            label = tk.Label(self, text=heading, bg=heading_bg, font=heading_font, padx=5, pady=5)
-            label.place(x=10 + i*150, y=20, width=140, height=30)
+            tk.Label(bar1, text=heading, bg='#EBEBEB', font=font_settings_heading).place(x=x_coords_headings[i], y=15)
 
-        self.dot_photo = tk.PhotoImage(file="three_dots.png")
+        # Dropdown for Select Broker
+        broker_options = [
+            "Alice Blue", "Angel One", "Dhan", "Fyers", "ICICI", "IIFL", 
+            "Kotak Neo", "Nuvama", "Shoonya", "Upstox", "Zerodha", "Zerodha-enc"
+        ]
+        self.selected_broker = tk.StringVar()
+        broker_dropdown = ttk.Combobox(bar1, textvariable=self.selected_broker, values=broker_options)
+        broker_dropdown.place(x=100, y=40, width=150)
 
-        # Add Brokers heading
-        add_brokers_label = tk.Label(self, text="Add Brokers", bg='#F0F0F0', font=("Helvetica", 16))
-        add_brokers_label.place(x=1100, y=20, width=200, height=30)
+        # Textbox for Index
+        self.index_entry = tk.Entry(bar1)
+        self.index_entry.place(x=350, y=40, width=100)
+        self.index_entry.config(validate="key", validatecommand=(self.register(self.validate_positive_number), '%P'))
 
-        # Create broker cards on the right
-        card_photos = ["kotak_logo.png", "kotak_logo.png", "kotak_logo.png"]
-        card_names = ["Kotak Neo", "kotak Broker", "kotak Broker"]
+        # Dropdown for Select Strategy
+        strategy_options = ["MACD Crossover", "EMI Crossover", "Strategy-3", "Strategy-4", "Strategy-5"]
+        self.selected_strategy = tk.StringVar()
+        strategy_dropdown = ttk.Combobox(bar1, textvariable=self.selected_strategy, values=strategy_options)
+        strategy_dropdown.place(x=600, y=40, width=150)
 
-        for i in range(4):  # 4 rows
-            for j in range(3):  # 3 columns
-                x = 950 + j * 150
-                y = 50 + i * 110
-                card_frame = tk.Frame(self, bg='#EBEBEB')
-                card_frame.place(x=x, y=y, width=130, height=110)
-                
-                # Image in the card
-                card_image = tk.PhotoImage(file=card_photos[(i * 3 + j) % len(card_photos)])
-                image_label = tk.Label(card_frame, image=card_image, bg='#EBEBEB')
-                image_label.image = card_image  # Keep a reference
-                image_label.place(x=10, y=10, width=110, height=50)
-                
-                # Text in the card
-                text_label = tk.Label(card_frame, text=card_names[(i * 3 + j) % len(card_names)], font=("Helvetica", 10), bg='#EBEBEB', fg='black')
-                text_label.place(x=10, y=70, width=110, height=20)
-                
-                # Add button in the card
-                add_button = tk.Button(card_frame, text="Add", font=("Helvetica", 10), bg='green', fg='white', command=lambda n=card_names[(i * 3 + j) % len(card_names)], img=card_photos[(i * 3 + j) % len(card_photos)]: self.add_broker(n, img))
-                add_button.place(x=10, y=90, width=110, height=20)
-
-    def add_broker(self, name, image):
-        self.popup_auth_key(name, image)
-
-    def show_keys(self):
-        self.popup_keys()
-
-    def show_message(self):
-        print("Menu item selected")
-
-    def remove_broker(self, row_index):
-        confirmation = messagebox.askokcancel("Remove Broker", "Do you really want to remove the broker?")
-        if confirmation:
-            del self.brokers[row_index]
-            self.render_brokers()
-
-    def popup_auth_key(self, name, image):
-        popup = tk.Toplevel(self)
-        popup.title("Authentication Key")
+        # Textbox for Lots
+        self.lots_entry = tk.Entry(bar1)
+        self.lots_entry.place(x=850, y=40, width=100)
+        self.lots_entry.config(validate="key", validatecommand=(self.register(self.validate_positive_number), '%P'))
         
-        label = tk.Label(popup, text="Enter Auth Key")
-        label.pack(side="top", fill="x", pady=10)
-        
-        entry = tk.Entry(popup)
-        entry.pack(pady=5)
-        
-        def on_ok():
-            auth_key = entry.get()
-            if auth_key in self.auth_codes:
-                messagebox.showerror("Error", "Broker already exists")
-            else:
-                self.auth_codes.append(auth_key)
-                self.add_broker_to_list(name, image)
-            popup.destroy()
+        # Button to Add Strategy
+        add_button = tk.Button(bar1, text="ADD Strategy", command=self.add_strategy)
+        add_button.place(x=1050, y=30)
 
-        button_frame = tk.Frame(popup)
-        button_frame.pack(pady=5)
+        # Create table headers for the strategy list
+        bar2 = tk.Frame(self, bg='#EBEBEB', height=30)
+        bar2.pack(fill='x', pady=10)
 
-        ok_button = tk.Button(button_frame, text="OK", command=on_ok)
-        ok_button.pack(side="left", padx=5)
+        headers = ['Brokers', 'Index', 'Strategy', 'Lots', 'Status', 'Last Updated']
+        x_coords_headers = [40, 300, 500, 700, 900, 1100]
+        font_settings_heading = ("Arial", 10, "bold")
 
-        cancel_button = tk.Button(button_frame, text="Cancel", command=popup.destroy)
-        cancel_button.pack(side="left", padx=5)
+        for i, header in enumerate(headers):
+            tk.Label(bar2, text=header, bg='#EBEBEB', font=font_settings_heading).place(x=x_coords_headers[i], y=5)
 
-    def add_broker_to_list(self, name, image):
-        # Check if the broker already exists
-        existing_broker = next((b for b in self.brokers if b["name"] == name), None)
-        if existing_broker:
-            existing_broker["index"] += 1
+        # Frame for the strategy table
+        self.strategy_frame = tk.Frame(self, bg='#F0F0F0')
+        self.strategy_frame.place(x=40, y=180, relwidth=0.9, relheight=0.6)
+
+        self.update_strategy_table()
+
+    def validate_positive_number(self, value):
+        if value.isdigit() and int(value) >= 0:
+            return True
+        elif value == "":
+            return True
         else:
-            self.brokers.append({
-                "name": name,
-                "image": image,
-                "index": 1,
-                "executions": "Pending",
-                "status": "logged in",
-                "status_color": "green",
-                "keys": "View Keys",
-                "actions": "Re-Login"
-            })
-        self.render_brokers()
+            return False
 
-    def render_brokers(self):
-        for widget in self.grid_slaves():  # Clear existing rows
-            if int(widget.grid_info()["row"]) > 1:
-                widget.destroy()
+    def add_strategy(self):
+        # Function to add strategy to the table and MongoDB
+        broker = self.selected_broker.get()
+        index = self.index_entry.get()
+        strategy = self.selected_strategy.get()
+        lots = self.lots_entry.get()
+        status = "Active"
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
-        for row_index, broker in enumerate(self.brokers):
-            y = 50 + row_index * 40
-            broker_photo = tk.PhotoImage(file=broker["image"])
-            for col_index, (key, cell_data) in enumerate(broker.items()):
-                if col_index == 0:
-                    label = tk.Label(self, image=broker_photo, bg='#F0F0F0')
-                    label.image = broker_photo  # Keep a reference
-                    label.place(x=10 + col_index * 150, y=y, width=140, height=30)
-                elif key == "index":
-                    label = tk.Label(self, text=cell_data, font=("Helvetica", 10), bg='#F0F0F0')
-                    label.place(x=10 + col_index * 150, y=y, width=140, height=30)
-                elif key == "executions":
-                    label = tk.Label(self, text=cell_data, font=("Helvetica", 10), bg='#F0F0F0')
-                    label.place(x=10 + col_index * 150, y=y, width=140, height=30)
-                elif key == "status":
-                    label = tk.Label(self, text=cell_data, font=("Helvetica", 10), fg='black', bg='#F0F0F0')
-                    label.place(x=10 + col_index * 150, y=y, width=120, height=30)
-                    circle = tk.Canvas(self, width=8, height=8, bg='#F0F0F0', highlightthickness=0)
-                    circle.create_oval(0, 0, 8, 8, fill=broker["status_color"])
-                    circle.place(x=130 + col_index * 150, y=y+11)
-                elif key == "keys":
-                    button = tk.Button(self, text=cell_data, font=("Helvetica", 10), command=self.show_keys)
-                    button.place(x=10 + col_index * 150, y=y, width=140, height=30)
-                elif key == "actions":
-                    button = tk.Button(self, text=cell_data, font=("Helvetica", 10))
-                    button.place(x=10 + col_index * 150, y=y, width=140, height=30)
-            # Dot button with dropdown menu
-            dot_button = tk.Menubutton(self, image=self.dot_photo, bg='#F0F0F0')
-            dot_button.image = self.dot_photo  # Keep a reference
-            menu = tk.Menu(dot_button, tearoff=0)
-            menu.add_command(label="Delete Keys", command=self.show_message)
-            menu.add_command(label="Update Keys", command=self.show_message)
-            menu.add_command(label="Remove Broker", command=lambda r=row_index: self.remove_broker(r))
-            dot_button["menu"] = menu
-            dot_button.place(x=10 + 6 * 150, y=y, width=30, height=30)
-
-    def popup_keys(self):
-        popup = tk.Toplevel(self)
-        popup.title("Keys")
-
-        label = tk.Label(popup, text="Here are your keys.")
-        label.pack(side="top", fill="x", pady=10)
+        # Add to MongoDB
+        client = pymongo.MongoClient("mongodb://localhost:27017/")
+        db = client["trading"]
+        collection = db["broker_strategy_mapping"]
+        new_strategy = {
+            "broker": broker,
+            "index": index,
+            "strategy": strategy,
+            "lots": lots,
+            "status": status,
+            "last_updated": last_updated
+        }
+        collection.insert_one(new_strategy)
         
-        button_frame = tk.Frame(popup)
-        button_frame.pack(pady=5)
+        # Clear the entry fields
+        self.selected_broker.set('')
+        self.index_entry.delete(0, tk.END)
+        self.selected_strategy.set('')
+        self.lots_entry.delete(0, tk.END)
+        
+        # Update the strategy table
+        self.update_strategy_table()
 
-        def update_keys():
-            print("Keys Updated")
+    def update_strategy_table(self):
+        # Clear previous strategy rows
+        for widget in self.strategy_frame.winfo_children():
+            widget.destroy()
+
+        # Fetch and display data from MongoDB
+        client = pymongo.MongoClient("mongodb://localhost:27017/")
+        db = client["trading"]
+        collection = db["broker_strategy_mapping"]
+        data = collection.find()
+
+        y = 0  # Start position for data rows
+        font_settings = ("Arial", 10)
         
-        ok_button = tk.Button(button_frame, text="OK", command=popup.destroy)
-        ok_button.pack(side="left", padx=5)
-        
-        update_button = tk.Button(button_frame, text="Update Keys", command=update_keys)
-        update_button.pack(side="left", padx=5)
+        # Load images for edit and delete icons
+        edit_image = Image.open("edit_icon.png")
+        edit_icon = ImageTk.PhotoImage(edit_image)
+        delete_image = Image.open("delete_icon.png")
+        delete_icon = ImageTk.PhotoImage(delete_image)
+
+        # Broker images mapping
+        broker_images = {
+            "Alice Blue": "alice_blue.png",
+            "Angel One": "angel_one.png",
+            "Dhan": "dhan.png",
+            "Fyers": "fyers.png",
+            "ICICI": "icici.png",
+            "IIFL": "iifl.png",
+            "Kotak Neo": "kotak_neo.png",
+            "Nuvama": "nuvama.png",
+            "Shoonya": "shoonya.png",
+            "Upstox": "upstox.png",
+            "Zerodha": "zerodha.png",
+            "Zerodha-enc": "zerodha_enc.png"
+        }
+
+        for strategy in data:
+            broker_frame = tk.Frame(self.strategy_frame, bg='#F0F0F0')
+            # broker_frame.place(x=0, y=y, width=970, height=30)
+            broker_frame.place(x=0, y=y, width=1400, height=30)
+
+            # Broker image
+            broker_image_path = broker_images.get(strategy["broker"], "default_image.png")
+            broker_image = Image.open(f"assets/brokers_logo_xs/{broker_image_path}")
+            broker_photo = ImageTk.PhotoImage(broker_image)
+            image_label = tk.Label(broker_frame, image=broker_photo, bg='#F0F0F0')
+            image_label.image = broker_photo  # Keep a reference
+            image_label.place(x=0, y=0, width=30, height=30)
+
+            # Broker name
+            broker_label = tk.Label(broker_frame, text=strategy["broker"], bg='#F0F0F0', font=font_settings)
+            broker_label.place(x=40, y=4)
+            index_label = tk.Label(broker_frame, text=strategy["index"], bg='#F0F0F0', font=font_settings)
+            index_label.place(x=260, y=4)
+            strategy_label = tk.Label(broker_frame, text=strategy["strategy"], bg='#F0F0F0', font=font_settings)
+            strategy_label.place(x=460, y=4)
+            lots_label = tk.Label(broker_frame, text=strategy["lots"], bg='#F0F0F0', font=font_settings)
+            lots_label.place(x=660, y=4)
+            status_label = tk.Label(broker_frame, text=strategy["status"], bg='#F0F0F0', font=font_settings)
+            status_label.place(x=860, y=4)
+            last_updated_label = tk.Label(broker_frame, text=strategy["last_updated"], bg='#F0F0F0', font=font_settings)
+            last_updated_label.place(x=1040, y=4)
+
+            # Edit and delete buttons with icons
+            edit_button = tk.Button(broker_frame, image=edit_icon, command=lambda s=strategy: self.edit_strategy(s))
+            edit_button.image = edit_icon  # Keep a reference to avoid garbage collection
+            edit_button.place(x=1210, y=0)
+            delete_button = tk.Button(broker_frame, image=delete_icon, command=lambda s=strategy: self.delete_strategy(s))
+            delete_button.image = delete_icon  # Keep a reference to avoid garbage collection
+            delete_button.place(x=1260, y=0)
+
+            y += 30  # Move to the next row position
+
+    def delete_strategy(self, strategy):
+        # Confirm before deleting
+        if messagebox.askokcancel("Delete", "Are you sure you want to delete this strategy?"):
+            # Delete from MongoDB
+            client = pymongo.MongoClient("mongodb://localhost:27017/")
+            db = client["trading"]
+            collection = db["broker_strategy_mapping"]
+            collection.delete_one({"_id": strategy["_id"]})
+            
+            # Update the strategy table
+            self.update_strategy_table()
+
+    def edit_strategy(self, strategy):
+        # Edit window
+        edit_window = tk.Toplevel(self)
+        edit_window.title("Edit Strategy")
+        edit_window.geometry("300x250")
+
+        # Dropdown for Select Broker
+        tk.Label(edit_window, text="Select Broker").place(x=10, y=10)
+        selected_broker = tk.StringVar(value=strategy["broker"])
+        broker_dropdown = ttk.Combobox(edit_window, textvariable=selected_broker, values=[
+            "Alice Blue", "Angel One", "Dhan", "Fyers", "ICICI", "IIFL", 
+            "Kotak Neo", "Nuvama", "Shoonya", "Upstox", "Zerodha", "Zerodha-enc"
+        ])
+        broker_dropdown.place(x=120, y=10, width=150)
+
+        # Textbox for Index
+        tk.Label(edit_window, text="Index").place(x=10, y=50)
+        index_entry = tk.Entry(edit_window)
+        index_entry.insert(0, strategy["index"])
+        index_entry.place(x=120, y=50, width=150)
+        index_entry.config(validate="key", validatecommand=(self.register(self.validate_positive_number), '%P'))
+
+        # Dropdown for Select Strategy
+        tk.Label(edit_window, text="Select Strategy").place(x=10, y=90)
+        selected_strategy = tk.StringVar(value=strategy["strategy"])
+        strategy_dropdown = ttk.Combobox(edit_window, textvariable=selected_strategy, values=[
+            "MACD Crossover", "EMI Crossover", "Strategy-3", "Strategy-4", "Strategy-5"
+        ])
+        strategy_dropdown.place(x=120, y=90, width=150)
+
+        # Textbox for Lots
+        tk.Label(edit_window, text="Lots").place(x=10, y=130)
+        lots_entry = tk.Entry(edit_window)
+        lots_entry.insert(0, strategy["lots"])
+        lots_entry.place(x=120, y=130, width=150)
+        lots_entry.config(validate="key", validatecommand=(self.register(self.validate_positive_number), '%P'))
+
+        # Buttons
+        update_button = tk.Button(edit_window, text="Update", command=lambda: self.update_strategy(
+            strategy["_id"], selected_broker.get(), index_entry.get(), selected_strategy.get(), lots_entry.get(), edit_window
+        ))
+        update_button.place(x=80, y=170)
+        cancel_button = tk.Button(edit_window, text="Cancel", command=edit_window.destroy)
+        cancel_button.place(x=160, y=170)
+        cancel_button.place(x=160, y=170)
+
+    def update_strategy(self, strategy_id, broker, index, strategy_name, lots, edit_window):
+        # Update in MongoDB
+        last_updated = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+        client = pymongo.MongoClient("mongodb://localhost:27017/")
+        db = client["trading"]
+        collection = db["broker_strategy_mapping"]
+        collection.update_one(
+            {"_id": strategy_id},
+            {"$set": {"broker": broker, "index": index, "strategy": strategy_name, "lots": lots, "last_updated": last_updated}}
+        )
+        # Close the edit window
+        edit_window.destroy()
+        # Update the strategy table
+        self.update_strategy_table()

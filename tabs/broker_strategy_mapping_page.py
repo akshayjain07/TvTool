@@ -5,7 +5,7 @@ import pymongo
 from datetime import datetime
 from PIL import Image, ImageTk
 
-class SignalsPage(tk.Frame):
+class BrokerStrategyMappingPage(tk.Frame):
     def __init__(self, parent, controller):
         super().__init__(parent, bg='#F0F0F0')
         self.grid(row=0, column=0, sticky="nsew")
